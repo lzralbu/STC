@@ -54,7 +54,7 @@ int main(void) {
 #include <stdlib.h>
 #include <string.h>
 #define _cmap_inits {0.85f}
-typedef struct      { size_t idx; uint8_t hx; } chash_bucket_t;
+typedef struct { size_t idx; uint8_t hx; bool used; } cmap_entry, cset_entry;
 #endif // CMAP_H_INCLUDED
 
 #ifndef _i_prefix
@@ -95,7 +95,7 @@ STC_API _cx_self        _cx_memb(_clone)(_cx_self map);
 STC_API void            _cx_memb(_drop)(_cx_self* self);
 STC_API void            _cx_memb(_clear)(_cx_self* self);
 STC_API bool            _cx_memb(_reserve)(_cx_self* self, size_t capacity);
-STC_API chash_bucket_t  _cx_memb(_bucket_)(const _cx_self* self, const _cx_rawkey* rkeyptr);
+STC_API cmap_entry      _cx_memb(_bucket_)(const _cx_self* self, const _cx_rawkey* rkeyptr);
 STC_API _cx_result      _cx_memb(_insert_entry_)(_cx_self* self, _cx_rawkey rkey);
 STC_API void            _cx_memb(_erase_entry)(_cx_self* self, _cx_value* val);
 
@@ -119,7 +119,7 @@ STC_INLINE bool         _cx_memb(_contains)(const _cx_self* self, _cx_rawkey rke
 
     STC_INLINE const _cx_mapped*
     _cx_memb(_at)(const _cx_self* self, _cx_rawkey rkey) {
-        chash_bucket_t b = _cx_memb(_bucket_)(self, &rkey);
+        cmap_entry b = _cx_memb(_bucket_)(self, &rkey);
         assert(self->_hashx[b.idx]);
         return &self->table[b.idx].second;
     }
@@ -239,7 +239,7 @@ STC_INLINE size_t
 _cx_memb(_erase)(_cx_self* self, _cx_rawkey rkey) {
     if (self->size == 0)
         return 0;
-    chash_bucket_t b = _cx_memb(_bucket_)(self, &rkey);
+    cmap_entry b = _cx_memb(_bucket_)(self, &rkey);
     return self->_hashx[b.idx] ? _cx_memb(_erase_entry)(self, self->table + b.idx), 1 : 0;
 }
 
@@ -325,17 +325,16 @@ STC_DEF void _cx_memb(_clear)(_cx_self* self) {
     #endif // !_i_no_emplace
 #endif // !_i_isset
 
-STC_DEF chash_bucket_t
+STC_DEF cmap_entry
 _cx_memb(_bucket_)(const _cx_self* self, const _cx_rawkey* rkeyptr) {
     const uint64_t _hash = i_hash(rkeyptr);
     i_size _cap = self->bucket_count;
-    chash_bucket_t b = {c_paste(fastrange_,_i_expandby)(_hash, _cap), (uint8_t)(_hash | 0x80)};
+    cmap_entry b = {c_paste(fastrange_,_i_expandby)(_hash, _cap), (uint8_t)(_hash | 0x80)};
     const uint8_t* _hx = self->_hashx;
     while (_hx[b.idx]) {
         if (_hx[b.idx] == b.hx) {
             const _cx_rawkey _raw = i_keyto(_i_keyref(self->table + b.idx));
-            if (i_eq((&_raw), rkeyptr))
-                break;
+            if (i_eq((&_raw), rkeyptr)) { b.used = true; break; }
         }
         if (++b.idx == _cap)
             b.idx = 0;
@@ -343,12 +342,38 @@ _cx_memb(_bucket_)(const _cx_self* self, const _cx_rawkey* rkeyptr) {
     return b;
 }
 
+#ifdef _i_ismap
+#include <errno.h>
+
+STC_INLINE cmap_entry
+_cx_memb(_get_entry)(_cx_self* self, _cx_rawkey rkey) {
+    if (self->size + 2 > (i_size)(self->bucket_count*self->max_load_factor))
+        errno = (int)_cx_memb(_reserve)(self, self->size*3/2)*ENOMEM;
+    return _cx_memb(_bucket_)(self, &rkey);
+}
+
+STC_DEF _cx_result
+_cx_memb(_put_entry)(_cx_self* self, cmap_entry entry, _cx_rawkey _rkey, _cx_rawmapped _rmapped) {
+    _cx_value* v = &self->table[entry.idx];
+    if (entry.used) {
+        assert(entry.hx == self->_hashx[entry.idx]);
+        i_valdrop(&v->second);
+    } else {
+        assert(0 == self->_hashx[entry.idx]);
+        self->size += 1;
+        self->_hashx[entry.idx] = entry.hx;
+        v->first = i_keyfrom(_rkey);
+    }
+    v->second = i_valfrom(_rmapped);
+}
+#endif
+
 STC_DEF _cx_result
 _cx_memb(_insert_entry_)(_cx_self* self, _cx_rawkey rkey) {
     bool nomem = false;
     if (self->size + 2 > (i_size)(self->bucket_count*self->max_load_factor))
         nomem = !_cx_memb(_reserve)(self, self->size*3/2);
-    chash_bucket_t b = _cx_memb(_bucket_)(self, &rkey);
+    cmap_entry b = _cx_memb(_bucket_)(self, &rkey);
     _cx_result res = {&self->table[b.idx], !self->_hashx[b.idx], nomem};
     if (res.inserted) {
         self->_hashx[b.idx] = b.hx;
@@ -397,7 +422,7 @@ _cx_memb(_reserve)(_cx_self* self, const size_t _newcap) {
         const uint8_t* h = self->_hashx;
         for (size_t i = 0; i < _oldbuckets; ++i, ++e) if (*h++) {
             _cx_rawkey r = i_keyto(_i_keyref(e));
-            chash_bucket_t b = _cx_memb(_bucket_)(&m, &r);
+            cmap_entry b = _cx_memb(_bucket_)(&m, &r);
             m.table[b.idx] = *e;
             m._hashx[b.idx] = (uint8_t)b.hx;
         }
