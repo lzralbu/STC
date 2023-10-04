@@ -56,17 +56,17 @@ int main(void) {
 #include "forward.h"
 #include <stdlib.h>
 #include <string.h>
-
 #endif // CSMAP_H_INCLUDED
 
 #ifndef _i_prefix
   #define _i_prefix csmap_
+#endif
+#ifndef _i_isset
   #define _i_ismap
   #define _i_MAP_ONLY c_true
   #define _i_SET_ONLY c_false
   #define _i_keyref(vp) (&(vp)->first)
 #else
-  #define _i_isset
   #define _i_MAP_ONLY c_false
   #define _i_SET_ONLY c_true
   #define _i_keyref(vp) (vp)

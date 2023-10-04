@@ -1,3 +1,4 @@
+
 /* MIT License
  *
  * Copyright (c) 2023 Tyge Løvset
@@ -21,135 +22,110 @@
  * SOFTWARE.
  */
 
-/* carc: atomic reference counted shared_ptr
+/* cbox: heap allocated boxed type
 #define i_implement
 #include <stc/cstr.h>
+#include <stc/algo/raii.h> // c_auto
 
-typedef struct { cstr name, last; } Person;
+typedef struct { cstr name, email; } Person;
 
-Person Person_make(const char* name, const char* last) {
-    return (Person){.name = cstr_from(name), .last = cstr_from(last)};
+Person Person_from(const char* name, const char* email) {
+    return (Person){.name = cstr_from(name), .email = cstr_from(email)};
 }
 Person Person_clone(Person p) {
     p.name = cstr_clone(p.name);
-    p.last = cstr_clone(p.last);
+    p.email = cstr_clone(p.email);
     return p;
 }
 void Person_drop(Person* p) {
-    printf("drop: %s %s\n", cstr_str(&p->name), cstr_str(&p->last));
-    cstr_drop(&p->name);
-    cstr_drop(&p->last);
+    printf("drop: %s %s\n", cstr_str(&p->name), cstr_str(&p->email));
+    c_drop(cstr, &p->name, &p->email);
 }
 
-#define i_type ArcPers
-#define i_val_class Person    // clone, drop, cmp, hash
-#include <stc/carc.h>
+#define i_type PBox
+#define i_val_class Person // bind Person clone+drop fn's
+#include <stc/cbox.h>
 
 int main(void) {
-    ArcPers p = ArcPers_from(Person_make("John", "Smiths"));
-    ArcPers q = ArcPers_clone(p); // share the pointer
+    c_auto (PBox, p, q)
+    {
+        p = PBox_from(Person_from("John Smiths", "josmiths@gmail.com"));
+        q = PBox_clone(p);
+        cstr_assign(&q.get->name, "Joe Smiths");
 
-    printf("%s %s. uses: %ld\n", cstr_str(&q.get->name), cstr_str(&q.get->last), *q.use_count);
-    c_drop(ArcPers, &p, &q);
+        printf("%s %s.\n", cstr_str(&p.get->name), cstr_str(&p.get->email));
+        printf("%s %s.\n", cstr_str(&q.get->name), cstr_str(&q.get->email));
+    }
 }
 */
 #include "priv/linkage.h"
 
-#ifndef CARC_H_INCLUDED
-#define CARC_H_INCLUDED
+#ifndef CBOX_H_INCLUDED
+#define CBOX_H_INCLUDED
 #include "ccommon.h"
 #include "forward.h"
 #include <stdlib.h>
+#include <string.h>
 
-#if defined(__GNUC__) || defined(__clang__)
-    typedef long catomic_long;
-    #define c_atomic_inc(v) (void)__atomic_add_fetch(v, 1, __ATOMIC_SEQ_CST)
-    #define c_atomic_dec_and_test(v) !__atomic_sub_fetch(v, 1, __ATOMIC_SEQ_CST)
-#elif defined(_MSC_VER)
-    #include <intrin.h>
-    typedef long catomic_long;
-    #define c_atomic_inc(v) (void)_InterlockedIncrement(v)
-    #define c_atomic_dec_and_test(v) !_InterlockedDecrement(v)
-#else
-    #include <stdatomic.h>
-    typedef _Atomic long catomic_long;
-    #define c_atomic_inc(v) (void)atomic_fetch_add(v, 1)
-    #define c_atomic_dec_and_test(v) (atomic_fetch_sub(v, 1) == 1)
-#endif
-
-#define carc_null {0}
-#endif // CARC_H_INCLUDED
+#define cbox_null {0}
+#endif // CBOX_H_INCLUDED
 
 #ifndef _i_prefix
-  #define _i_prefix carc_
+  #define _i_prefix cbox_
 #endif
-#define _i_carc
+#define _i_cbox
 #include "priv/template.h"
 typedef i_keyraw _cx_raw;
 
-#if c_option(c_no_atomic)
-  #define i_no_atomic
-#endif
-#if !defined i_no_atomic
-  #define _i_atomic_inc(v)          c_atomic_inc(v)
-  #define _i_atomic_dec_and_test(v) c_atomic_dec_and_test(v)
-#else
-  #define _i_atomic_inc(v)          (void)(++*(v))
-  #define _i_atomic_dec_and_test(v) !(--*(v))
-#endif
 #ifndef i_is_forward
-_cx_DEFTYPES(_c_arc_types, _cx_Self, i_key);
+_cx_DEFTYPES(_c_box_types, _cx_Self, i_key);
 #endif
-struct _cx_MEMB(_rep_) { catomic_long counter; i_key value; };
 
-STC_INLINE _cx_Self _cx_MEMB(_init)(void) 
-    { return c_LITERAL(_cx_Self){NULL, NULL}; }
+// constructors (take ownership)
+STC_INLINE _cx_Self _cx_MEMB(_init)(void)
+    { return c_LITERAL(_cx_Self){NULL}; }
 
 STC_INLINE long _cx_MEMB(_use_count)(const _cx_Self* self)
-    { return self->use_count ? *self->use_count : 0; }
+    { return (long)(self->get != NULL); }
 
-STC_INLINE _cx_Self _cx_MEMB(_from_ptr)(_cx_value* p) {
-    _cx_Self ptr = {p};
-    if (p) 
-        *(ptr.use_count = _i_alloc(catomic_long)) = 1;
-    return ptr;
-}
+STC_INLINE _cx_Self _cx_MEMB(_from_ptr)(_cx_value* p)
+    { return c_LITERAL(_cx_Self){p}; }
 
-// c++: std::make_shared<_cx_value>(val)
+// c++: std::make_unique<i_key>(val)
 STC_INLINE _cx_Self _cx_MEMB(_make)(_cx_value val) {
-    _cx_Self ptr;
-    struct _cx_MEMB(_rep_)* rep = _i_alloc(struct _cx_MEMB(_rep_));
-    *(ptr.use_count = &rep->counter) = 1;
-    *(ptr.get = &rep->value) = val;
-    return ptr;
+    _cx_Self ptr = {_i_alloc(_cx_value)};
+    *ptr.get = val; return ptr;
 }
 
 STC_INLINE _cx_raw _cx_MEMB(_toraw)(const _cx_Self* self)
     { return i_keyto(self->get); }
 
-STC_INLINE _cx_Self _cx_MEMB(_move)(_cx_Self* self) {
-    _cx_Self ptr = *self;
-    self->get = NULL, self->use_count = NULL;
-    return ptr;
-}
-
+// destructor
 STC_INLINE void _cx_MEMB(_drop)(_cx_Self* self) {
-    if (self->use_count && _i_atomic_dec_and_test(self->use_count)) {
+    if (self->get) {
         i_keydrop(self->get);
-        if ((char *)self->get != (char *)self->use_count + offsetof(struct _cx_MEMB(_rep_), value))
-            i_free(self->get);
-        i_free((long*)self->use_count);
+        i_free(self->get);
     }
 }
 
-STC_INLINE void _cx_MEMB(_reset)(_cx_Self* self) {
-    _cx_MEMB(_drop)(self);
-    self->use_count = NULL, self->get = NULL;
+STC_INLINE _cx_Self _cx_MEMB(_move)(_cx_Self* self) {
+    _cx_Self ptr = *self; 
+    self->get = NULL;
+    return ptr;
 }
 
+STC_INLINE _cx_value* _cx_MEMB(_release)(_cx_Self* self)
+    { return _cx_MEMB(_move)(self).get; }
+
+STC_INLINE void _cx_MEMB(_reset)(_cx_Self* self) {
+    _cx_MEMB(_drop)(self);
+    self->get = NULL;
+}
+
+// take ownership of p
 STC_INLINE void _cx_MEMB(_reset_to)(_cx_Self* self, _cx_value* p) {
     _cx_MEMB(_drop)(self);
-    *self = _cx_MEMB(_from_ptr)(p);
+    self->get = p;
 }
 
 #ifndef i_no_emplace
@@ -158,26 +134,30 @@ STC_INLINE _cx_Self _cx_MEMB(_from)(_cx_raw raw)
 #else
 STC_INLINE _cx_Self _cx_MEMB(_from)(_cx_value val)
     { return _cx_MEMB(_make)(val); }
-#endif    
+#endif
 
-// does not use i_keyclone, so OK to always define.
-STC_INLINE _cx_Self _cx_MEMB(_clone)(_cx_Self ptr) {
-    if (ptr.use_count)
-        _i_atomic_inc(ptr.use_count);
-    return ptr;
-}
+#if !defined i_no_clone
+    STC_INLINE _cx_Self _cx_MEMB(_clone)(_cx_Self other) {
+        if (!other.get)
+            return other;
+        _cx_Self out = {_i_alloc(i_key)};
+        *out.get = i_keyclone((*other.get));
+        return out;
+    }
+#endif // !i_no_clone
 
 // take ownership of unowned
 STC_INLINE void _cx_MEMB(_take)(_cx_Self* self, _cx_Self unowned) {
     _cx_MEMB(_drop)(self);
     *self = unowned;
 }
-// share ownership with ptr
-STC_INLINE void _cx_MEMB(_assign)(_cx_Self* self, _cx_Self ptr) {
-    if (ptr.use_count)
-        _i_atomic_inc(ptr.use_count);
+// transfer ownership from moved; set moved to NULL
+STC_INLINE void _cx_MEMB(_assign)(_cx_Self* self, _cx_Self* moved) {
+    if (moved->get == self->get)
+        return;
     _cx_MEMB(_drop)(self);
-    *self = ptr;
+    *self = *moved;
+    moved->get = NULL;
 }
 
 #if defined _i_has_cmp
@@ -219,9 +199,6 @@ STC_INLINE void _cx_MEMB(_assign)(_cx_Self* self, _cx_Self ptr) {
         { return c_default_hash(&self->get); }
 #endif // i_no_hash
 
-#undef i_no_atomic
-#undef _i_atomic_inc
-#undef _i_atomic_dec_and_test
-#undef _i_carc
+#undef _i_cbox
 #include "priv/template2.h"
 #include "priv/linkage2.h"

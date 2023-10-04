@@ -70,11 +70,13 @@ int main(void) {
 #define _it_ptr(it) (it.ref ? it.ref : it.end)
 #endif // CVEC_H_INCLUDED
 
-#define _i_prefix cvec_
+#ifndef _i_prefix
+  #define _i_prefix cvec_
+#endif
 #include "priv/template.h"
 
 #ifndef i_is_forward
-   _cx_DEFTYPES(_c_cvec_types, _cx_Self, i_key);
+   _cx_DEFTYPES(_c_vec_types, _cx_Self, i_key);
 #endif
 typedef i_keyraw _cx_raw;
 STC_API _cx_Self        _cx_MEMB(_init)(void);

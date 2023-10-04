@@ -29,15 +29,17 @@
 #include "forward.h"
 #endif // CSTACK_H_INCLUDED
 
-#define _i_prefix cstack_
+#ifndef _i_prefix
+  #define _i_prefix cstack_
+#endif
 #include "priv/template.h"
 
 #ifndef i_is_forward
 #ifdef i_capacity
   #define i_no_clone
-  _cx_DEFTYPES(_c_cstack_fixed, _cx_Self, i_key, i_capacity);
+  _cx_DEFTYPES(_c_stack_fixed, _cx_Self, i_key, i_capacity);
 #else
-  _cx_DEFTYPES(_c_cstack_types, _cx_Self, i_key);
+  _cx_DEFTYPES(_c_stack_types, _cx_Self, i_key);
 #endif
 #endif
 typedef i_keyraw _cx_raw;

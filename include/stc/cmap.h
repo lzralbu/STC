@@ -59,12 +59,13 @@ struct chash_slot { uint8_t hashx; };
 
 #ifndef _i_prefix
   #define _i_prefix cmap_
+#endif
+#ifndef _i_isset
   #define _i_ismap
   #define _i_MAP_ONLY c_true
   #define _i_SET_ONLY c_false
   #define _i_keyref(vp) (&(vp)->first)
 #else
-  #define _i_isset
   #define _i_MAP_ONLY c_false
   #define _i_SET_ONLY c_true
   #define _i_keyref(vp) (vp)
@@ -72,7 +73,7 @@ struct chash_slot { uint8_t hashx; };
 #define _i_ishash
 #include "priv/template.h"
 #ifndef i_is_forward
-  _cx_DEFTYPES(_c_chash_types, _cx_Self, i_key, i_val, _i_MAP_ONLY, _i_SET_ONLY);
+  _cx_DEFTYPES(_c_hash_types, _cx_Self, i_key, i_val, _i_MAP_ONLY, _i_SET_ONLY);
 #endif
 
 _i_MAP_ONLY( struct _cx_value {

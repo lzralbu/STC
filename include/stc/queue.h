@@ -21,24 +21,5 @@
  * SOFTWARE.
  */
 
-// Unordered set - implemented as closed hashing with linear probing and no tombstones.
-/*
-#define i_tag sx
-#define i_key int
-#include <stc/cset.h>
-#include <stdio.h>
-
-int main(void) {
-    cset_sx s = cset_sx_init();
-    cset_sx_insert(&s, 5);
-    cset_sx_insert(&s, 8);
-
-    c_foreach (i, cset_sx, s)
-        printf("set %d\n", *i.ref);
-    cset_sx_drop(&s);
-}
-*/
-
-#define _i_prefix cset_
-#define _i_isset
-#include "cmap.h"
+#define _i_prefix queue_
+#include "cqueue.h"

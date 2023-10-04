@@ -30,11 +30,13 @@
 #include <string.h>
 #endif // CDEQ_H_INCLUDED
 
-#define _i_prefix cdeq_
+#ifndef _i_prefix
+  #define _i_prefix cdeq_
+#endif
 #define _pop _pop_front
 #define _pull _pull_front
 #include "priv/template.h"
-#include "priv/cqueue_hdr.h"
+#include "priv/queue_hdr.h"
 #undef _pop
 #undef _pull
 
@@ -128,7 +130,7 @@ _cx_MEMB(_get_mut)(_cx_Self* self, _cx_raw raw)
 /* -------------------------- IMPLEMENTATION ------------------------- */
 #if defined(i_implement) || defined(i_static)
 
-#include "priv/cqueue_imp.h"
+#include "priv/queue_imp.h"
 
 STC_DEF _cx_value*
 _cx_MEMB(_push_front)(_cx_Self* self, i_key value) {
