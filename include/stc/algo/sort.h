@@ -45,7 +45,7 @@ int main(void) {
 #define i_key int
 #define i_type IDeq
 #define i_more // retain input template params to be reused by sort.h
-#include <stc/cdeq.h>
+#include <stc/deq.h>
 #include <stc/algo/sort.h>
 
 int main(void) {

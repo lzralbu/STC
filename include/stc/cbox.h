@@ -21,5 +21,5 @@
  * SOFTWARE.
  */
 
-#define _i_prefix box_
-#include "cbox.h"
+#define _i_prefix cbox_
+#include "box.h"

@@ -1,11 +1,11 @@
-// Example of clist using the node API.
+// Example of list using the node API.
 
 #include <stdio.h> 
 
 #define i_type List
 #define i_key int
 #define i_use_cmp
-#include <stc/clist.h>
+#include <stc/list.h>
 
 void printList(List list) {
     printf("list:");

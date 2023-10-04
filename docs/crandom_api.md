@@ -69,7 +69,7 @@ double              crand_normal(crand_t* rng, crand_normal_t* dist);
 #define i_key int
 #define i_val intptr_t
 #define i_tag i
-#include <stc/csmap.h>
+#include <stc/smap.h>
 
 int main(void)
 {
@@ -84,15 +84,15 @@ int main(void)
     crand_normal_t dist = crand_normal_init(Mean, StdDev);
 
     // Create histogram map
-    csmap_i mhist = {0};
+    smap_i mhist = {0};
     c_forrange (N) {
         int index = (int)round(crand_normal(&rng, &dist));
-        csmap_i_emplace(&mhist, index, 0).ref->second += 1;
+        smap_i_emplace(&mhist, index, 0).ref->second += 1;
     }
 
     // Print the gaussian bar chart
     cstr bar = {0};
-    c_foreach (i, csmap_i, mhist) {
+    c_foreach (i, smap_i, mhist) {
         int n = (int)(i.ref->second * StdDev * Scale * 2.5 / N);
         if (n > 0) {
             cstr_resize(&bar, n, '*');
@@ -101,7 +101,7 @@ int main(void)
     }
     // Cleanup
     cstr_drop(&bar);
-    csmap_i_drop(&mhist);
+    smap_i_drop(&mhist);
 }
 ```
 Output:

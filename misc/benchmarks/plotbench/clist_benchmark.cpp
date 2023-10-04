@@ -19,7 +19,7 @@ static float secs(Range s) { return (float)(s.t2 - s.t1) / CLOCKS_PER_SEC; }
 
 #define i_val size_t
 #define i_tag x
-#include <stc/clist.h>
+#include <stc/list.h>
 
 #ifdef __cplusplus
 Sample test_std_forward_list() {
@@ -64,37 +64,37 @@ Sample test_std_forward_list() { Sample s = {"std-forward_list"}; return s;}
 
 
 Sample test_stc_forward_list() {
-    typedef clist_x container;
+    typedef list_x container;
     Sample s = {"STC,forward_list"};
     {
         s.test[INSERT].t1 = clock();
-        container con = clist_x_init();
+        container con = list_x_init();
         csrand(seed);
-        c_forrange (N/2) clist_x_push_front(&con, crand() & mask1);
-        c_forrange (N/2) clist_x_push_back(&con, crand() & mask1);
+        c_forrange (N/2) list_x_push_front(&con, crand() & mask1);
+        c_forrange (N/2) list_x_push_back(&con, crand() & mask1);
         s.test[INSERT].t2 = clock();
         s.test[INSERT].sum = 0;
         s.test[ERASE].t1 = clock();
-        c_forrange (N) clist_x_pop_front(&con);
+        c_forrange (N) list_x_pop_front(&con);
         s.test[ERASE].t2 = clock();
         s.test[ERASE].sum = 0;
-        clist_x_drop(&con);
+        list_x_drop(&con);
      }{
         csrand(seed);
-        container con = clist_x_init();
-        c_forrange (N) clist_x_push_front(&con, crand() & mask2);
+        container con = list_x_init();
+        c_forrange (N) list_x_push_front(&con, crand() & mask2);
         s.test[FIND].t1 = clock();
         size_t sum = 0;
-        //clist iteration - skipping
+        //list iteration - skipping
         s.test[FIND].t2 = clock();
         s.test[FIND].sum = sum;
         s.test[ITER].t1 = clock();
         sum = 0;
-        c_forrange (R) c_foreach (i, clist_x, con) sum += *i.ref;
+        c_forrange (R) c_foreach (i, list_x, con) sum += *i.ref;
         s.test[ITER].t2 = clock();
         s.test[ITER].sum = sum;
         s.test[DESTRUCT].t1 = clock();
-        clist_x_drop(&con);
+        list_x_drop(&con);
      }
      s.test[DESTRUCT].t2 = clock();
      s.test[DESTRUCT].sum = 0;

@@ -34,8 +34,8 @@ STC_API _cx_value*      _cx_MEMB(_push)(_cx_Self* self, i_key value); // push_ba
 STC_API void            _cx_MEMB(_shrink_to_fit)(_cx_Self *self);
 STC_API _cx_iter        _cx_MEMB(_advance)(_cx_iter it, intptr_t n);
 
-#define _cdeq_toidx(self, pos) (((pos) - (self)->start) & (self)->capmask)
-#define _cdeq_topos(self, idx) (((self)->start + (idx)) & (self)->capmask)
+#define _q_toidx(self, pos) (((pos) - (self)->start) & (self)->capmask)
+#define _q_topos(self, idx) (((self)->start + (idx)) & (self)->capmask)
 
 STC_INLINE _cx_Self     _cx_MEMB(_init)(void)
                             { _cx_Self cx = {0}; return cx; }
@@ -65,7 +65,7 @@ STC_INLINE void         _cx_MEMB(_copy)(_cx_Self* self, const _cx_Self* other) {
                         }
 #endif // !i_no_clone
 STC_INLINE intptr_t     _cx_MEMB(_size)(const _cx_Self* self) 
-                            { return _cdeq_toidx(self, self->end); }
+                            { return _q_toidx(self, self->end); }
 STC_INLINE intptr_t     _cx_MEMB(_capacity)(const _cx_Self* self)
                             { return self->capmask; }
 STC_INLINE bool         _cx_MEMB(_empty)(const _cx_Self* self)
@@ -109,7 +109,7 @@ STC_INLINE void _cx_MEMB(_next)(_cx_iter* it) {
 }
 
 STC_INLINE intptr_t _cx_MEMB(_index)(const _cx_Self* self, _cx_iter it)
-    { return _cdeq_toidx(self, it.pos); }
+    { return _q_toidx(self, it.pos); }
 
 STC_INLINE void _cx_MEMB(_adjust_end_)(_cx_Self* self, intptr_t n)
     { self->end = (self->end + n) & self->capmask; }

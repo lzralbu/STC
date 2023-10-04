@@ -35,7 +35,7 @@ using StdSet = robin_hood::unordered_flat_set<std::string, string_hash, std::equ
 #define i_type StcSet
 #define i_val_str
 //#define i_hash(txtp) std::hash<std::string_view>{}(*txtp)
-#include <stc/cset.h>
+#include <stc/hset.h>
 
 
 static const int BENCHMARK_SIZE = 250000;
@@ -154,7 +154,7 @@ int main(void) {
     
     csrand(seed);
     sum = 0, n = 0;
-    std::cerr << "\nstrsize\tmsecs\tinsert: cset<cstr>, size=" << BENCHMARK_SIZE/2 << "\n";
+    std::cerr << "\nstrsize\tmsecs\tinsert: hset<cstr>, size=" << BENCHMARK_SIZE/2 << "\n";
     for (int strsize = 1; strsize <= MAX_STRING_SIZE; strsize += 4) {
         StcSet set = StcSet_with_capacity(BENCHMARK_SIZE/2);
         sum += benchmark(set, BENCHMARK_SIZE/2, strsize), ++n;
@@ -177,7 +177,7 @@ int main(void) {
 
     csrand(seed);
     sum = 0, n = 0;
-    std::cerr << "\nstrsize\tmsecs\tfind: cset<cstr>, size=" << BENCHMARK_SIZE/2 << "\n";
+    std::cerr << "\nstrsize\tmsecs\tfind: hset<cstr>, size=" << BENCHMARK_SIZE/2 << "\n";
     for (int strsize = 1; strsize <= MAX_STRING_SIZE; strsize += 2) {
         StcSet set = StcSet_with_capacity(BENCHMARK_SIZE/2);
         sum += benchmark_lookup(set, BENCHMARK_SIZE/2, strsize), ++n;

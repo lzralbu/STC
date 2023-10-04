@@ -34,18 +34,18 @@ DEFMAP(map_s, <std::string, std::string>);
 #define i_val int32_t
 #define i_tag i
 #define i_max_load_factor float(MaxLoadFactor100) / 100.0f
-#include <stc/cmap.h>
+#include <stc/hmap.h>
 
 #define i_key uint64_t
 #define i_val uint64_t
 #define i_tag x
 #define i_max_load_factor float(MaxLoadFactor100) / 100.0f
-#include <stc/cmap.h>
+#include <stc/hmap.h>
 
 #define i_key_str
 #define i_val_str
 #define i_max_load_factor float(MaxLoadFactor100) / 100.0f
-#include <stc/cmap.h>
+#include <stc/hmap.h>
 
 PICOBENCH_SUITE("Map1");
 
@@ -69,42 +69,42 @@ static void ins_and_erase_i(picobench::state& s)
     s.set_result(map.size());
 }
 /*
-static void ins_and_erase_cmap_i(picobench::state& s)
+static void ins_and_erase_hmap_i(picobench::state& s)
 {
-    cmap_i map = cmap_i_init();
+    hmap_i map = hmap_i_init();
     csrand(seed);
 
     picobench::scope scope(s);
     c_forrange (s.iterations())
-        cmap_i_insert(&map, crand(), 0);
-    cmap_i_clear(&map);
+        hmap_i_insert(&map, crand(), 0);
+    hmap_i_clear(&map);
     csrand(seed);
     c_forrange (s.iterations())
-        cmap_i_insert(&map, crand(), 0);
+        hmap_i_insert(&map, crand(), 0);
     csrand(seed);
     c_forrange (s.iterations())
-        cmap_i_erase(&map, crand());
-    s.set_result(cmap_i_size(&map));
-    cmap_i_drop(&map);
+        hmap_i_erase(&map, crand());
+    s.set_result(hmap_i_size(&map));
+    hmap_i_drop(&map);
 }
 */
-static void ins_and_erase_cmap_x(picobench::state& s)
+static void ins_and_erase_hmap_x(picobench::state& s)
 {
-    cmap_x map = cmap_x_init();
+    hmap_x map = hmap_x_init();
     csrand(seed);
 
     picobench::scope scope(s);
     c_forrange (s.iterations())
-        cmap_x_insert(&map, crand(), 0);
-    cmap_x_clear(&map);
+        hmap_x_insert(&map, crand(), 0);
+    hmap_x_clear(&map);
     csrand(seed);
     c_forrange (s.iterations())
-        cmap_x_insert(&map, crand(), 0);
+        hmap_x_insert(&map, crand(), 0);
     csrand(seed);
     c_forrange (s.iterations())
-        cmap_x_erase(&map, crand());
-    s.set_result(cmap_x_size(&map));
-    cmap_x_drop(&map);
+        hmap_x_erase(&map, crand());
+    s.set_result(hmap_x_size(&map));
+    hmap_x_drop(&map);
 }
 
 #define P samples(S1).iterations({N1/4})
@@ -112,7 +112,7 @@ PICOBENCH(ins_and_erase_i<umap_x>).P;
 PICOBENCH(ins_and_erase_i<dmap_x>).P;
 PICOBENCH(ins_and_erase_i<fmap_x>).P;
 PICOBENCH(ins_and_erase_i<tmap_x>).P;
-PICOBENCH(ins_and_erase_cmap_x).P;
+PICOBENCH(ins_and_erase_hmap_x).P;
 #undef P
 
 PICOBENCH_SUITE("Map2");
@@ -132,18 +132,18 @@ static void ins_and_access_i(picobench::state& s)
     s.set_result(result);
 }
 
-static void ins_and_access_cmap_i(picobench::state& s)
+static void ins_and_access_hmap_i(picobench::state& s)
 {
     uint64_t mask = (1ull << s.arg()) - 1;
     size_t result = 0;
-    cmap_i map = cmap_i_init();
+    hmap_i map = hmap_i_init();
     csrand(seed);
 
     picobench::scope scope(s);
     c_forrange (N1)
-        result += ++cmap_i_insert(&map, crand() & mask, 0).ref->second;
+        result += ++hmap_i_insert(&map, crand() & mask, 0).ref->second;
     s.set_result(result);
-    cmap_i_drop(&map);
+    hmap_i_drop(&map);
 }
 
 #define P samples(S1).iterations({N1, N1, N1, N1}).args({18, 23, 25, 31})
@@ -151,7 +151,7 @@ PICOBENCH(ins_and_access_i<umap_i>).P;
 PICOBENCH(ins_and_access_i<dmap_i>).P;
 PICOBENCH(ins_and_access_i<fmap_i>).P;
 PICOBENCH(ins_and_access_i<tmap_i>).P;
-PICOBENCH(ins_and_access_cmap_i).P;
+PICOBENCH(ins_and_access_hmap_i).P;
 #undef P
 
 PICOBENCH_SUITE("Map3");
@@ -183,26 +183,26 @@ static void ins_and_access_s(picobench::state& s)
     s.set_result(result + map.size());
 }
 
-static void ins_and_access_cmap_s(picobench::state& s)
+static void ins_and_access_hmap_s(picobench::state& s)
 {
     cstr str = cstr_with_size(s.arg(), 'x');
     char* buf = cstr_data(&str);
     size_t result = 0;
-    cmap_str map = cmap_str_init();
+    hmap_str map = hmap_str_init();
     csrand(seed);
 
     picobench::scope scope(s);
     c_forrange (s.iterations()) {
         randomize(buf, s.arg());
         //if (s.arg() > 30) { printf("%s\n", buf); exit(0); }
-        cmap_str_emplace(&map, buf, buf);
+        hmap_str_emplace(&map, buf, buf);
 
         randomize(buf, s.arg());
-        result += cmap_str_erase(&map, buf);
+        result += hmap_str_erase(&map, buf);
     }
-    s.set_result(result + cmap_str_size(&map));
+    s.set_result(result + hmap_str_size(&map));
     cstr_drop(&str);
-    cmap_str_drop(&map);
+    hmap_str_drop(&map);
 }
 
 #define P samples(S1).iterations({N1/5, N1/5, N1/5, N1/10, N1/40}).args({13, 7, 8, 100, 1000})
@@ -210,7 +210,7 @@ PICOBENCH(ins_and_access_s<umap_s>).P;
 PICOBENCH(ins_and_access_s<dmap_s>).P;
 PICOBENCH(ins_and_access_s<fmap_s>).P;
 PICOBENCH(ins_and_access_s<tmap_s>).P;
-PICOBENCH(ins_and_access_cmap_s).P;
+PICOBENCH(ins_and_access_hmap_s).P;
 #undef P
 
 PICOBENCH_SUITE("Map4");
@@ -245,9 +245,9 @@ static void iterate_x(picobench::state& s)
     s.set_result(result);
 }
 
-static void iterate_cmap_x(picobench::state& s)
+static void iterate_hmap_x(picobench::state& s)
 {
-    cmap_x map = cmap_x_init();
+    hmap_x map = hmap_x_init();
     uint64_t K = (1ull << s.arg()) - 1;
 
     picobench::scope scope(s);
@@ -256,8 +256,8 @@ static void iterate_cmap_x(picobench::state& s)
 
     // measure insert then iterate whole map
     c_forrange (n, s.iterations()) {
-        cmap_x_insert_or_assign(&map, crand(), n);
-        if (!(n & K)) c_foreach (i, cmap_x, map)
+        hmap_x_insert_or_assign(&map, crand(), n);
+        if (!(n & K)) c_foreach (i, hmap_x, map)
             result += i.ref->second;
     }
 
@@ -266,12 +266,12 @@ static void iterate_cmap_x(picobench::state& s)
 
     // measure erase then iterate whole map
     c_forrange (n, s.iterations()) {
-        cmap_x_erase(&map, crand());
-        if (!(n & K)) c_foreach (i, cmap_x, map)
+        hmap_x_erase(&map, crand());
+        if (!(n & K)) c_foreach (i, hmap_x, map)
             result += i.ref->second;
     }
     s.set_result(result);
-    cmap_x_drop(&map);
+    hmap_x_drop(&map);
 }
 
 
@@ -280,5 +280,5 @@ PICOBENCH(iterate_x<umap_x>).P;
 PICOBENCH(iterate_x<dmap_x>).P;
 PICOBENCH(iterate_x<fmap_x>).P;
 PICOBENCH(iterate_x<tmap_x>).P;
-PICOBENCH(iterate_cmap_x).P;
+PICOBENCH(iterate_hmap_x).P;
 #undef P

@@ -23,7 +23,7 @@
 
 STC_DEF _cx_iter _cx_MEMB(_advance)(_cx_iter it, intptr_t n) {
     intptr_t len = _cx_MEMB(_size)(it._s);
-    intptr_t pos = it.pos, idx = _cdeq_toidx(it._s, pos);
+    intptr_t pos = it.pos, idx = _q_toidx(it._s, pos);
     it.pos = (pos + n) & it._s->capmask; 
     it.ref += it.pos - pos;
     if (!c_less_unsigned(idx + n, len)) it.ref = NULL;

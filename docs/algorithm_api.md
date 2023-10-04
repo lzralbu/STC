@@ -18,25 +18,25 @@
 #define i_key int
 #define i_val int
 #define i_tag ii
-#include <stc/csmap.h>
+#include <stc/smap.h>
 ...
-csmap_ii map = c_init(csmap_ii, { {23,1}, {3,2}, {7,3}, {5,4}, {12,5} });
+smap_ii map = c_init(smap_ii, { {23,1}, {3,2}, {7,3}, {5,4}, {12,5} });
 
-c_foreach (i, csmap_ii, map)
+c_foreach (i, smap_ii, map)
     printf(" %d", i.ref->first);
 // 3 5 7 12 23
 // same without using c_foreach:
-for (csmap_ii_iter i = csmap_ii_begin(&map); i.ref; csmap_ii_next(&i))
+for (smap_ii_iter i = smap_ii_begin(&map); i.ref; smap_ii_next(&i))
     printf(" %d", i.ref->first);
 
-csmap_ii_iter it = csmap_ii_find(&map, 7);
+smap_ii_iter it = smap_ii_find(&map, 7);
 // iterate from it to end
-c_foreach (i, csmap_ii, it, csmap_ii_end(&map))
+c_foreach (i, smap_ii, it, smap_ii_end(&map))
     printf(" %d", i.ref->first);
 // 7 12 23
 
 // structured binding:
-c_forpair (id, count, csmap_ii, map)
+c_forpair (id, count, smap_ii, map)
     printf(" (%d %d)", *_.id, *_.count);
 // (3 2) (5 4) (7 3) (12 5) (23 1)
 ```
@@ -46,15 +46,15 @@ Iterate compound literal array elements. Additional to `i.ref`, you can access `
 ```c
 // apply multiple push_backs
 c_forlist (i, int, {1, 2, 3})
-    cvec_i_push_back(&vec, *i.ref);
+    vec_i_push_back(&vec, *i.ref);
 
 // insert in existing map
-c_forlist (i, cmap_ii_raw, { {4, 5}, {6, 7} })
-    cmap_ii_insert(&map, i.ref->first, i.ref->second);
+c_forlist (i, hmap_ii_raw, { {4, 5}, {6, 7} })
+    hmap_ii_insert(&map, i.ref->first, i.ref->second);
 
 // string literals pushed to a stack of cstr:
 c_forlist (i, const char*, {"Hello", "crazy", "world"})
-    cstack_str_emplace(&stk, *i.ref);
+    stack_str_emplace(&stk, *i.ref);
 ```
 ---
 
@@ -165,44 +165,44 @@ Note that `c_flt_take()` and `c_flt_takewhile()` breaks the loop on false.
 Make any container from an initializer list:
 ```c
 #define i_key_str // owned cstr string value type
-#include <stc/cset.h>
+#include <stc/hset.h>
 
 #define i_key int
 #define i_val int
-#include <stc/cmap.h>
+#include <stc/hmap.h>
 ...
 // Initializes with const char*, internally converted to cstr!
-cset_str myset = c_init(cset_str, {"This", "is", "the", "story"});
+hset_str myset = c_init(hset_str, {"This", "is", "the", "story"});
 
 int x = 7, y = 8;
-cmap_int mymap = c_init(cmap_int, { {1, 2}, {3, 4}, {5, 6}, {x, y} });
+hmap_int mymap = c_init(hmap_int, { {1, 2}, {3, 4}, {5, 6}, {x, y} });
 ```
 Drop multiple containers of the same type:
 ```c
-c_drop(cset_str, &myset, &myset2);
+c_drop(hset_str, &myset, &myset2);
 ```
 
 ### c_find_if, c_erase_if, c_eraseremove_if
 Find or erase linearily in containers using a predicate
 - For `c_find_if(iter, C, c, pred)`, ***iter*** is in/out and must be declared prior to call.
-- Use `c_erase_if(iter, C, c, pred)` with **clist**, **cmap**, **cset**, **csmap**, and **csset**.
-- Use `c_eraseremove_if(iter, C, c, pred)` with **cstack**, **cvec**, **cdeq**, and **cqueue**.
+- Use `c_erase_if(iter, C, c, pred)` with **list**, **hmap**, **hset**, **smap**, and **sset**.
+- Use `c_eraseremove_if(iter, C, c, pred)` with **stack**, **vec**, **deq**, and **queue**.
 ```c
 // Search vec for first value > 2:
-cvec_i_iter i;
-c_find_if(i, cvec_i, vec, *i.ref > 2);
+vec_i_iter i;
+c_find_if(i, vec_i, vec, *i.ref > 2);
 if (i.ref) printf("%d\n", *i.ref);
 
 // Erase all values > 2 in vec:
-c_eraseremove_if(i, cvec_i, vec, *i.ref > 2);
+c_eraseremove_if(i, vec_i, vec, *i.ref > 2);
 
 // Search map for a string containing "hello" and erase it:
-cmap_str_iter it, it1 = ..., it2 = ...;
-c_find_if(it, csmap_str, it1, it2, cstr_contains(it.ref, "hello"));
-if (it.ref) cmap_str_erase_at(&map, it);
+hmap_str_iter it, it1 = ..., it2 = ...;
+c_find_if(it, smap_str, it1, it2, cstr_contains(it.ref, "hello"));
+if (it.ref) hmap_str_erase_at(&map, it);
 
 // Erase all strings containing "hello" in a sorted map:
-c_erase_if(i, csmap_str, map, cstr_contains(i.ref, "hello"));
+c_erase_if(i, smap_str, map, cstr_contains(i.ref, "hello"));
 ```
 
 ### sort_n_ - two times faster qsort
@@ -222,13 +222,13 @@ int main(void) {
     c_forrange (i, c_arraylen(arr)) printf(" %d", arr[i]);
 }
 ```
-Containers with random access may also be sorted. Even sorting cdeq/cqueue (with ring buffer) is
+Containers with random access may also be sorted. Even sorting deq/queue (with ring buffer) is
 possible and very fast. Note that `i_more` must be defined to retain specified template parameters for use by sort:
 ```c
 #define i_type MyDeq
 #define i_key int
 #define i_more
-#include <stc/cdeq.h> // deque
+#include <stc/deq.h> // deque
 #include <stc/algo/sort.h>
 #include <stdio.h>
 
@@ -265,7 +265,7 @@ intptr_t n = c_arraylen(array);
 ### c_swap, c_const_cast
 ```c
 // Safe macro for swapping internals of two objects of same type:
-c_swap(cmap_int, &map1, &map2);
+c_swap(hmap_int, &map1, &map2);
 
 // Type-safe casting a from const (pointer):
 const char cs[] = "Hello";
@@ -275,7 +275,7 @@ int* ip = c_const_cast(int*, cs);  // issues a warning!
 
 ### Predefined template parameter functions
 
-**ccharptr** - Non-owning `const char*` "class" element type: `#define i_keyclass ccharptr`
+**ccharptr** - Non-owning `const char*` "class" element type: `#define i_key_class ccharptr`
 ```c
 typedef     const char* ccharptr;
 int         ccharptr_cmp(const ccharptr* x, const ccharptr* y);
@@ -362,23 +362,23 @@ return ok;
 #include <stc/cstr.h>
 
 #define i_key_str
-#include <stc/cvec.h>
+#include <stc/vec.h>
 
 // receiver should check errno variable
-cvec_str readFile(const char* name)
+vec_str readFile(const char* name)
 {
-    cvec_str vec = {0}; // returned
+    vec_str vec = {0}; // returned
     c_with (FILE* fp = fopen(name, "r"), fp != NULL, fclose(fp))
     c_with (cstr line = {0}, cstr_drop(&line))
         while (cstr_getline(&line, fp))
-            cvec_str_emplace(&vec, cstr_str(&line));
+            vec_str_emplace(&vec, cstr_str(&line));
     return vec;
 }
 
 int main(void)
 {
-    c_with (cvec_str vec = readFile(__FILE__), cvec_str_drop(&vec))
-        c_foreach (i, cvec_str, vec)
+    c_with (vec_str vec = readFile(__FILE__), vec_str_drop(&vec))
+        c_foreach (i, vec_str, vec)
             printf("| %s\n", cstr_str(i.ref));
 }
 ```

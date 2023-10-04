@@ -203,9 +203,9 @@
 #elif defined i_from || defined i_drop
   #error "i_from / i_drop not supported. Define i_keyfrom/i_valfrom and/or i_keydrop/i_valdrop instead"
 #elif defined i_keyraw && defined _i_ishash && !(defined i_hash && (defined _i_has_cmp || defined i_eq))
-  #error "For cmap/cset, both i_hash and i_eq (or i_less or i_cmp) must be defined when i_keyraw is defined."
+  #error "For hmap/hset, both i_hash and i_eq (or i_less or i_cmp) must be defined when i_keyraw is defined."
 #elif defined i_keyraw && defined i_use_cmp && !defined _i_has_cmp
-  #error "For csmap/csset/cpque, i_cmp or i_less must be defined when i_keyraw is defined."
+  #error "For smap/sset/pque, i_cmp or i_less must be defined when i_keyraw is defined."
 #endif
 
 #ifndef i_tag
@@ -244,7 +244,7 @@
   #define i_cmp(x, y) (i_less(y, x)) - (i_less(x, y))
 #endif
 
-#if defined _i_ismap // ---- process cmap/csmap value i_val, ... ----
+#if defined _i_ismap // ---- process hmap/smap value i_val, ... ----
 
 #ifdef i_val_str
   #define i_val_class cstr

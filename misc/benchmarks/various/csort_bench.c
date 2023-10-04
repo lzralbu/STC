@@ -9,7 +9,7 @@
 #define i_type Ints
 #define i_key int
 #define i_more
-#include <stc/cvec.h>
+#include <stc/vec.h>
 #include <stc/algo/sort.h>
 
 #define ROTL(d,bits) ((d<<(bits)) | (d>>(8*sizeof(d)-(bits))))

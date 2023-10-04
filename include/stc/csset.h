@@ -21,27 +21,6 @@
  * SOFTWARE.
  */
 
-// Sorted set - implemented as an AA-tree (balanced binary tree).
-/*
-#include <stdio.h>
-
-#define i_tag i
-#define i_key int
-#include <stc/csset.h> // sorted set of int
-
-int main(void) {
-    csset_i s = csset_i_init();
-    csset_i_insert(&s, 5);
-    csset_i_insert(&s, 8);
-    csset_i_insert(&s, 3);
-    csset_i_insert(&s, 5);
-
-    c_foreach (k, csset_i, s)
-        printf("set %d\n", *k.ref);
-    csset_i_drop(&s);
-}
-*/
-
 #define _i_prefix csset_
 #define _i_isset
-#include "csmap.h"
+#include "smap.h"

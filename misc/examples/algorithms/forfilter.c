@@ -7,7 +7,7 @@
 
 #define i_type IVec
 #define i_key int
-#include <stc/cstack.h>
+#include <stc/stack.h>
 
 // filters and transforms:
 #define flt_skipValue(i, x) (*i.ref != (x))
@@ -81,27 +81,27 @@ fn main() {
     println!("{:?}", words_containing_i);
 }
 */
-#define i_type SVec
-#define i_keyclass csview
-#include <stc/cstack.h>
+#define i_key_class csview
+#define i_tag sv
+#include <stc/vec.h>
 
 void demo3(void)
 {
     const char* sentence = "This is a sentence in C99.";
-    SVec words = {0}; 
+    vec_sv words = {0}; 
     c_fortoken (w, sentence, " ") // split words
-        SVec_push(&words, *w.ref);
+        vec_sv_push(&words, *w.ref);
 
-    SVec words_containing_i = {0};
-    c_forfilter (w, SVec, words, 
+    vec_sv words_containing_i = {0};
+    c_forfilter (w, vec_sv, words, 
                     csview_contains(*w.ref, "i"))
-        SVec_push(&words_containing_i, *w.ref);
+        vec_sv_push(&words_containing_i, *w.ref);
 
-    c_foreach (w, SVec, words_containing_i)
+    c_foreach (w, vec_sv, words_containing_i)
         printf(" %.*s", c_SV(*w.ref));
 
     puts("");
-    c_drop(SVec, &words, &words_containing_i);
+    c_drop(vec_sv, &words, &words_containing_i);
 }
 
 void demo4(void)

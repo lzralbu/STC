@@ -5,13 +5,13 @@
 
 #define i_type IBox
 #define i_key long
-#include <stc/cbox.h> // unique_ptr<long> alike.
+#include <stc/box.h> // unique_ptr<long> alike.
 
-// cmap of cstr => IBox
+// hmap of cstr => IBox
 #define i_type Boxmap
 #define i_key_str
-#define i_valboxed IBox // i_valboxed: use properties from IBox automatically
-#include <stc/cmap.h>
+#define i_val_arcbox IBox // i_val_arcbox: use properties from IBox automatically
+#include <stc/hmap.h>
 
 
 int main(void)

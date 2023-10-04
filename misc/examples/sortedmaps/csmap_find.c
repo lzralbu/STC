@@ -6,13 +6,13 @@
 #define i_key int
 #define i_val_str
 #define i_tag istr
-#include <stc/csmap.h>
+#include <stc/smap.h>
 
-#define i_key csmap_istr_raw
+#define i_key smap_istr_raw
 #define i_tag istr
-#include <stc/cvec.h>
+#include <stc/vec.h>
 
-void print_elem(csmap_istr_raw p) {
+void print_elem(smap_istr_raw p) {
     printf("(%d, %s) ", p.first, p.second);
 }
 
@@ -26,15 +26,15 @@ void print_elem(csmap_istr_raw p) {
         puts(""); \
     }
 
-using_print_collection(csmap_istr)
-using_print_collection(cvec_istr)
+using_print_collection(smap_istr)
+using_print_collection(vec_istr)
 
-void findit(csmap_istr c, csmap_istr_key val)
+void findit(smap_istr c, smap_istr_key val)
 {
     printf("Trying find() on value %d\n", val);
-    csmap_istr_iter result = csmap_istr_find(&c, val); // prefer contains() or get()
+    smap_istr_iter result = smap_istr_find(&c, val); // prefer contains() or get()
     if (result.ref) {
-        printf("Element found: "); print_elem(csmap_istr_value_toraw(result.ref)); puts("");
+        printf("Element found: "); print_elem(smap_istr_value_toraw(result.ref)); puts("");
     } else {
         puts("Element not found.");
     }
@@ -42,32 +42,32 @@ void findit(csmap_istr c, csmap_istr_key val)
 
 int main(void)
 {
-    csmap_istr m1 = c_init(csmap_istr, {{40, "Zr"}, {45, "Rh"}});
-    cvec_istr v = {0};
+    smap_istr m1 = c_init(smap_istr, {{40, "Zr"}, {45, "Rh"}});
+    vec_istr v = {0};
 
     puts("The starting map m1 is (key, value):");
-    print_collection_csmap_istr(&m1);
+    print_collection_smap_istr(&m1);
 
-    typedef cvec_istr_value pair;
-    cvec_istr_push(&v, c_LITERAL(pair){43, "Tc"});
-    cvec_istr_push(&v, c_LITERAL(pair){41, "Nb"});
-    cvec_istr_push(&v, c_LITERAL(pair){46, "Pd"});
-    cvec_istr_push(&v, c_LITERAL(pair){42, "Mo"});
-    cvec_istr_push(&v, c_LITERAL(pair){44, "Ru"});
-    cvec_istr_push(&v, c_LITERAL(pair){44, "Ru"}); // attempt a duplicate
+    typedef vec_istr_value pair;
+    vec_istr_push(&v, c_LITERAL(pair){43, "Tc"});
+    vec_istr_push(&v, c_LITERAL(pair){41, "Nb"});
+    vec_istr_push(&v, c_LITERAL(pair){46, "Pd"});
+    vec_istr_push(&v, c_LITERAL(pair){42, "Mo"});
+    vec_istr_push(&v, c_LITERAL(pair){44, "Ru"});
+    vec_istr_push(&v, c_LITERAL(pair){44, "Ru"}); // attempt a duplicate
 
     puts("Inserting the following vector data into m1:");
-    print_collection_cvec_istr(&v);
+    print_collection_vec_istr(&v);
 
-    c_foreach (i, cvec_istr, cvec_istr_begin(&v), cvec_istr_end(&v))
-        csmap_istr_emplace(&m1, i.ref->first, i.ref->second);
+    c_foreach (i, vec_istr, vec_istr_begin(&v), vec_istr_end(&v))
+        smap_istr_emplace(&m1, i.ref->first, i.ref->second);
 
     puts("The modified map m1 is (key, value):");
-    print_collection_csmap_istr(&m1);
+    print_collection_smap_istr(&m1);
     puts("");
     findit(m1, 45);
     findit(m1, 6);
 
-    csmap_istr_drop(&m1);
-    cvec_istr_drop(&v);
+    smap_istr_drop(&m1);
+    vec_istr_drop(&v);
 }

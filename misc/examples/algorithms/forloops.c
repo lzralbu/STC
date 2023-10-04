@@ -3,12 +3,12 @@
 
 #define i_type IVec
 #define i_key int
-#include <stc/cstack.h>
+#include <stc/stack.h>
 
 #define i_type IMap
 #define i_key int
 #define i_val int
-#include <stc/cmap.h>
+#include <stc/hmap.h>
 
 
 int main(void)

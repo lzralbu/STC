@@ -101,7 +101,7 @@ int main(void)
     *(boolptr) = it.ref == NULL; \
 } while (0)
 
-// Use with: clist, cmap, cset, csmap, csset:
+// Use with: list, hmap, hset, smap, sset:
 #define c_erase_if(it, C, cnt, pred) do { \
     C* _cnt = &cnt; \
     for (C##_iter it = C##_begin(_cnt); it.ref; ) { \
@@ -110,7 +110,7 @@ int main(void)
     } \
 } while (0)
 
-// Use with: cstack, cvec, cdeq, cqueue:
+// Use with: cstack, vec, deq, queue:
 #define c_eraseremove_if(it, C, cnt, pred) do { \
     C* _cnt = &cnt; \
     intptr_t _n = 0; \

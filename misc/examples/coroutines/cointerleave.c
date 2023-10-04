@@ -3,7 +3,7 @@
 #include <stc/coroutine.h>
 #define i_type IVec
 #define i_key int
-#include <stc/cvec.h>
+#include <stc/vec.h>
 
 struct GenValue {
     IVec *v;

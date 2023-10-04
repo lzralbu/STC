@@ -32,28 +32,28 @@ typedef int64_t IValue;
 #include "external/khash.h"
 KHASH_MAP_INIT_INT64(ii, IValue)
 
-// cmap template expansion
+// hmap template expansion
 #define i_key IKey
 #define i_val IValue
 #define i_tag ii
 //#define i_expandby 1
 #define i_max_load_factor MAX_LOAD_FACTOR / 100.0f
-#include <stc/cmap.h>
+#include <stc/hmap.h>
 
 #define SEED(s) rng = crand_init(s)
 #define RAND(N) (crand_u64(&rng) & (((uint64_t)1 << N) - 1))
 
-#define CMAP_SETUP(X, Key, Value) cmap_##X map = cmap_##X##_init()
-#define CMAP_PUT(X, key, val)     cmap_##X##_insert_or_assign(&map, key, val).ref->second
-#define CMAP_EMPLACE(X, key, val) cmap_##X##_insert(&map, key, val).ref->second
-#define CMAP_ERASE(X, key)        cmap_##X##_erase(&map, key)
-#define CMAP_FIND(X, key)         cmap_##X##_contains(&map, key)
-#define CMAP_FOR(X, i)            c_foreach (i, cmap_##X, map)
+#define CMAP_SETUP(X, Key, Value) hmap_##X map = hmap_##X##_init()
+#define CMAP_PUT(X, key, val)     hmap_##X##_insert_or_assign(&map, key, val).ref->second
+#define CMAP_EMPLACE(X, key, val) hmap_##X##_insert(&map, key, val).ref->second
+#define CMAP_ERASE(X, key)        hmap_##X##_erase(&map, key)
+#define CMAP_FIND(X, key)         hmap_##X##_contains(&map, key)
+#define CMAP_FOR(X, i)            c_foreach (i, hmap_##X, map)
 #define CMAP_ITEM(X, i)           i.ref->second
-#define CMAP_SIZE(X)              cmap_##X##_size(&map)
-#define CMAP_BUCKETS(X)           cmap_##X##_bucket_count(&map)
-#define CMAP_CLEAR(X)             cmap_##X##_clear(&map)
-#define CMAP_DTOR(X)              cmap_##X##_drop(&map)
+#define CMAP_SIZE(X)              hmap_##X##_size(&map)
+#define CMAP_BUCKETS(X)           hmap_##X##_bucket_count(&map)
+#define CMAP_CLEAR(X)             hmap_##X##_clear(&map)
+#define CMAP_DTOR(X)              hmap_##X##_drop(&map)
 
 #define KMAP_SETUP(X, Key, Value) khash_t(X)* map = kh_init(X); khiter_t ki; int ret
 #define KMAP_PUT(X, key, val)     (ki = kh_put(X, map, key, &ret), \

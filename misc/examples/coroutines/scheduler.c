@@ -6,7 +6,7 @@
 #define i_key cco_task*
 #define i_keydrop(x) { puts("free task"); free(*x); }
 #define i_no_clone
-#include <stc/cqueue.h>
+#include <stc/queue.h>
 
 typedef struct {
     cco_tasks tasks;

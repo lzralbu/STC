@@ -3,7 +3,7 @@
 #define i_implement
 #include <stc/cstr.h>
 
-// cmap of cstr => long*
+// hmap of cstr => long*
 #define i_type Ptrmap
 #define i_key_str
 #define i_val long*
@@ -12,7 +12,7 @@
 #define i_valto(x) **x
 #define i_valclone(x) c_new(long, *x)
 #define i_valdrop(x) c_free(*x)
-#include <stc/cmap.h>
+#include <stc/hmap.h>
 
 int main(void)
 {

@@ -19,7 +19,7 @@ static float secs(Range s) { return (float)(s.t2 - s.t1) / CLOCKS_PER_SEC; }
 #define i_key size_t
 #define i_val size_t
 #define i_tag x
-#include <stc/csmap.h>
+#include <stc/smap.h>
 
 #ifdef __cplusplus
 Sample test_std_map() {
@@ -70,43 +70,43 @@ Sample test_std_map() { Sample s = {"std-map"}; return s;}
 
 
 Sample test_stc_map() {
-    typedef csmap_x container;
+    typedef smap_x container;
     Sample s = {"STC,map"};
     {
         csrand(seed);
         s.test[INSERT].t1 = clock();
-        container con = csmap_x_init();
-        c_forrange (i, N/2) csmap_x_insert(&con, crand() & mask1, i);
-        c_forrange (i, N/2) csmap_x_insert(&con, i, i);
+        container con = smap_x_init();
+        c_forrange (i, N/2) smap_x_insert(&con, crand() & mask1, i);
+        c_forrange (i, N/2) smap_x_insert(&con, i, i);
         s.test[INSERT].t2 = clock();
-        s.test[INSERT].sum = csmap_x_size(&con);
+        s.test[INSERT].sum = smap_x_size(&con);
         csrand(seed);
         s.test[ERASE].t1 = clock();
-        c_forrange (N) csmap_x_erase(&con, crand() & mask1);
+        c_forrange (N) smap_x_erase(&con, crand() & mask1);
         s.test[ERASE].t2 = clock();
-        s.test[ERASE].sum = csmap_x_size(&con);
-        csmap_x_drop(&con);
+        s.test[ERASE].sum = smap_x_size(&con);
+        smap_x_drop(&con);
      }{
-        container con = csmap_x_init();
+        container con = smap_x_init();
         csrand(seed);
-        c_forrange (i, N/2) csmap_x_insert(&con, crand() & mask1, i);
-        c_forrange (i, N/2) csmap_x_insert(&con, i, i);
+        c_forrange (i, N/2) smap_x_insert(&con, crand() & mask1, i);
+        c_forrange (i, N/2) smap_x_insert(&con, i, i);
         csrand(seed);
         s.test[FIND].t1 = clock();
         size_t sum = 0;
-        const csmap_x_value* val;
+        const smap_x_value* val;
         c_forrange (N)
-            if ((val = csmap_x_get(&con, crand() & mask1)))
+            if ((val = smap_x_get(&con, crand() & mask1)))
                 sum += val->second;
         s.test[FIND].t2 = clock();
         s.test[FIND].sum = sum;
         s.test[ITER].t1 = clock();
         sum = 0;
-        c_forrange (R) c_foreach (i, csmap_x, con) sum += i.ref->second;
+        c_forrange (R) c_foreach (i, smap_x, con) sum += i.ref->second;
         s.test[ITER].t2 = clock();
         s.test[ITER].sum = sum;
         s.test[DESTRUCT].t1 = clock();
-        csmap_x_drop(&con);
+        smap_x_drop(&con);
      }
      s.test[DESTRUCT].t2 = clock();
      s.test[DESTRUCT].sum = 0;
